@@ -1,0 +1,47 @@
+{
+  "author": "Danack",
+  "bugs": {
+    "url": "https://github.com/Danack/Message/issues"
+  },
+  "description": "Trivial message system.",
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "jest": "^26.0.1",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.0",
+    "tslint": "^6.1.2",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.9.5"
+  },
+  "files": [
+    "src/**/*"
+  ],
+  "homepage": "https://github.com/Danack/Message",
+  "keywords": [
+    "widget",
+    "react",
+    "preact"
+  ],
+  "license": "MIT",
+  "main": "src/index.ts",
+  "name": "danack-message",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Danack/Message.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "postversion": "git push && git push --tags",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "jest --config jestconfig.json && npm run lint",
+    "test": "jest --config=jestconfig.json",
+    "test:watch": "jest --config=jestconfig.json --watchAll",
+    "test:help": "jest --help",
+    "version": "npm run format && git add -A src"
+  },
+  "types": "lib/index.d.ts",
+  "version": "0.0.1"
+}

@@ -1,0 +1,14 @@
+{
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "only-arrow-functions": [
+      true,
+      "allow-declarations",
+      "allow-named-functions"
+    ],
+    "semicolon": [
+      true,
+      "always"
+    ]
+  }
+}
