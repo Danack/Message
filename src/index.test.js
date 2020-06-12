@@ -1,4 +1,3 @@
-
 var clearEvents = require('danack-message').clearEvents;
 var getQueuedEvents = require('danack-message').getQueuedEvents;
 var registerEventListener = require('danack-message').registerEventListener;
@@ -7,14 +6,11 @@ var stopEventProcessing = require('danack-message').stopEventProcessing;
 var triggerEvent = require('danack-message').triggerEvent;
 var unregisterListener = require('danack-message').unregisterListener;
 
-
-
 const event_foo = 'foo';
 const event_unknown = 'unknown';
 
-
-describe("widgety", function() {
-  it("event queue management", function() {
+describe('widgety', function () {
+  it('event queue management', function () {
     stopEventProcessing();
     clearEvents();
     expect(getQueuedEvents()).toHaveLength(0);
@@ -24,8 +20,7 @@ describe("widgety", function() {
     expect(getQueuedEvents()).toHaveLength(0);
   });
 
-  it("dispatches okay", function() {
-
+  it('dispatches okay', function () {
     const id = '12345';
 
     clearEvents();
@@ -34,10 +29,10 @@ describe("widgety", function() {
 
     var calledParams = [];
     const fn = (params) => {
-       calledParams.push(params);
+      calledParams.push(params);
     };
 
-    const values = {zok: true, fot: false, pik: 3};
+    const values = { zok: true, fot: false, pik: 3 };
 
     // Check an unknown event doesn't reach our callback
     triggerEvent(event_unknown, values);
@@ -50,14 +45,12 @@ describe("widgety", function() {
     expect(calledParams[0]).toEqual(values);
   });
 
-
-  it("stopping starting processing works", function() {
-
+  it('stopping starting processing works', function () {
     const id = 'abcdef';
 
     clearEvents();
 
-    const values = {zok: true, fot: false, pik: 3};
+    const values = { zok: true, fot: false, pik: 3 };
 
     var calledParams = [];
     const fn = (params) => {
@@ -92,5 +85,7 @@ describe("widgety", function() {
     expect(calledParams).toHaveLength(2);
   });
 
+
+  // TODO test debug timeout.
 
 });
