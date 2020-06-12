@@ -9,6 +9,21 @@ type EventData = {
 // until all widgets are loaded.
 let eventProcessingActive: boolean = false;
 
+// Record of whether event processing has ever been active
+// If someone sends an event and processing has never been
+// active, we give them an info message of 'you probably
+// forgot to start processing'.
+let eventProcessingEverActive: boolean = false;
+
+
+// If an an event is triggered, but event processes has never been started
+// we create a warning timeout, that will show a debug message after x seconds
+// to avoid people staring at their computer, wondering when their events
+// aren't being processed.
+let notStartedWarningTimeout:any = null;
+
+const notStartedWarningTime = 5;
+
 
 // A queue of events that have been stored, rather than dispatched
 // immediately. This is typically used when an app is starting up.
@@ -47,7 +62,14 @@ const unregisterListener = (event:string, id:string) => {
 
 // Allow events to be processed, and process any backlog of events.
 const startEventProcessing = () => {
+
+    if (notStartedWarningTimeout !== null) {
+        clearTimeout(notStartedWarningTimeout);
+        notStartedWarningTimeout = null;
+    }
+
     eventProcessingActive = true;
+    eventProcessingEverActive = true;
 
     while (eventDataQueue.length > 0) {
         const eventData = eventDataQueue.pop();
@@ -71,7 +93,11 @@ const stopEventProcessing = () => {
     eventProcessingActive = false;
 };
 
-
+const timeoutDebugInfo = () => {
+    // TODO - change to just no-console
+    // @ts-ignore: console warning is fine here.
+    console.warn("You sent an event but event processing has never been activated. Call Message.startEventProcessing if you want events to be dispatched.");
+};
 
 /**
  * Actually process the event.
@@ -109,6 +135,18 @@ const triggerEvent = (eventType:string, params:object) => {
 
     // If not, store the data for later processing.
     eventDataQueue.push({type: eventType, params});
+
+    // If processing has ever been active, assume they know
+    // what they're doing
+    if (eventProcessingEverActive === true) {
+        return;
+    }
+
+    // Otherwise create a timeout to remind them to call 'startEventProcessing'
+    notStartedWarningTimeout = setTimeout(
+        timeoutDebugInfo,
+        notStartedWarningTime * 1000
+    );
 };
 
 /**
