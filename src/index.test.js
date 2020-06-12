@@ -1,31 +1,31 @@
-var clearEvents = require('danack-message').clearEvents;
-var getQueuedEvents = require('danack-message').getQueuedEvents;
-var registerEventListener = require('danack-message').registerEventListener;
-var startEventProcessing = require('danack-message').startEventProcessing;
-var stopEventProcessing = require('danack-message').stopEventProcessing;
-var triggerEvent = require('danack-message').triggerEvent;
+var clearMessages = require('danack-message').clearMessages;
+var getQueuedMessages = require('danack-message').getQueuedMessages;
+var registerMessageListener = require('danack-message').registerMessageListener;
+var startMessageProcessing = require('danack-message').startMessageProcessing;
+var stopMessageProcessing = require('danack-message').stopMessageProcessing;
+var sendMessage = require('danack-message').sendMessage;
 var unregisterListener = require('danack-message').unregisterListener;
 
-const event_foo = 'foo';
-const event_unknown = 'unknown';
+const message_foo = 'foo';
+const message_unknown = 'unknown';
 
 describe('widgety', function () {
-  it('event queue management', function () {
-    stopEventProcessing();
-    clearEvents();
-    expect(getQueuedEvents()).toHaveLength(0);
-    triggerEvent('foo', {});
-    expect(getQueuedEvents()).toHaveLength(1);
-    clearEvents();
-    expect(getQueuedEvents()).toHaveLength(0);
+  it('Message queue management', function () {
+    stopMessageProcessing();
+    clearMessages();
+    expect(getQueuedMessages()).toHaveLength(0);
+    sendMessage('foo', {});
+    expect(getQueuedMessages()).toHaveLength(1);
+    clearMessages();
+    expect(getQueuedMessages()).toHaveLength(0);
   });
 
   it('dispatches okay', function () {
     const id = '12345';
 
-    clearEvents();
-    startEventProcessing();
-    triggerEvent(event_foo, {});
+    clearMessages();
+    startMessageProcessing();
+    sendMessage(message_foo, {});
 
     var calledParams = [];
     const fn = (params) => {
@@ -34,13 +34,13 @@ describe('widgety', function () {
 
     const values = { zok: true, fot: false, pik: 3 };
 
-    // Check an unknown event doesn't reach our callback
-    triggerEvent(event_unknown, values);
+    // Check an unknown message doesn't reach our callback
+    sendMessage(message_unknown, values);
     expect(calledParams).toHaveLength(0);
 
-    // Check foo event does reach our callback.
-    registerEventListener(event_foo, id, fn);
-    triggerEvent(event_foo, values);
+    // Check foo message does reach our callback.
+    registerMessageListener(message_foo, id, fn);
+    sendMessage(message_foo, values);
     expect(calledParams).toHaveLength(1);
     expect(calledParams[0]).toEqual(values);
   });
@@ -48,7 +48,7 @@ describe('widgety', function () {
   it('stopping starting processing works', function () {
     const id = 'abcdef';
 
-    clearEvents();
+    clearMessages();
 
     const values = { zok: true, fot: false, pik: 3 };
 
@@ -57,34 +57,34 @@ describe('widgety', function () {
       calledParams.push(params);
     };
 
-    stopEventProcessing();
+    clearMessages();
+    stopMessageProcessing();
 
-    // Check foo event does reach our callback.
-    registerEventListener(event_foo, id, fn);
+    // Check foo message does reach our callback.
+    registerMessageListener(message_foo, id, fn);
 
-    // Check an event doesn't reach our callback when processing
+    // Check an message doesn't reach our callback when processing
     // isn't running
-    triggerEvent(event_foo, values);
+    sendMessage(message_foo, values);
     expect(calledParams).toHaveLength(0);
 
-    // Start event processing
-    startEventProcessing();
-    // check the event was received.
+    // Start message processing
+    startMessageProcessing();
+    // check the message was received.
     expect(calledParams).toHaveLength(1);
 
-    // Trigger another event
-    triggerEvent(event_foo, values);
+    // send another message
+    sendMessage(message_foo, values);
     // Check the callback was called
     expect(calledParams).toHaveLength(2);
 
-    stopEventProcessing();
+    stopMessageProcessing();
 
-    // Trigger another event
-    triggerEvent(event_foo, values);
+    // send another message
+    sendMessage(message_foo, values);
     // Check the callback was not called.
     expect(calledParams).toHaveLength(2);
   });
-
 
   // TODO test debug timeout.
 

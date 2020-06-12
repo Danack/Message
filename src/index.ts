@@ -1,19 +1,19 @@
-type EventData = {
+type Message = {
   type: string;
   params: object;
 };
 
-// Whether event processing is active. Events are not processed
-// until startEventProcessing is called, so that events that are
+// Whether message processing is active. Events are not processed
+// until startMessageProcessing is called, so that events that are
 // triggered while widgets are being created, aren't dispatched
 // until all widgets are loaded.
-let eventProcessingActive: boolean = false;
+let messageProcessingActive: boolean = false;
 
 // Record of whether event processing has ever been active
 // If someone sends an event and processing has never been
 // active, we give them an info message of 'you probably
 // forgot to start processing'.
-let eventProcessingEverActive: boolean = false;
+let messageProcessingEverActive: boolean = false;
 
 // If an an event is triggered, but event processes has never been started
 // we create a warning timeout, that will show a debug message after x seconds
@@ -25,73 +25,73 @@ const notStartedWarningTime = 5;
 
 // A queue of events that have been stored, rather than dispatched
 // immediately. This is typically used when an app is starting up.
-let eventDataQueue: EventData[] = [];
+let messageQueue: Message[] = [];
 
 // The current listeners to events.
-let eventListeners: object = {};
+let messsageListeners: object = {};
 
 /**
  * Register a listener for a particular type of event.
  *
- * @param eventType which event to listen for.
+ * @param messageType which event to listen for.
  * @param id A unique id for this listener
  * @param fn The thing to call when the event is dispatched.
  */
-const registerEventListener = (eventType: string, id: string, fn: (params: object) => void) => {
+const registerMessageListener = (messageType: string, id: string, fn: (params: object) => void) => {
   // @ts-ignore: any ...
-  if (eventListeners[eventType] === undefined) {
+  if (messsageListeners[messageType] === undefined) {
     // @ts-ignore: any ...
-    eventListeners[eventType] = {};
+    messsageListeners[messageType] = {};
   }
   // @ts-ignore: any ...
-  eventListeners[eventType][id] = fn;
+  messsageListeners[messageType][id] = fn;
 };
 
 /**
  *
  *
- * @param event
+ * @param messageType
  * @param id
  */
-const unregisterListener = (event: string, id: string) => {
+const unregisterListener = (messageType: string, id: string) => {
   // @ts-ignore: any ...
-  delete eventListeners[event][id];
+  delete messsageListeners[messageType][id];
 };
 
-// Allow events to be processed, and process any backlog of events.
-const startEventProcessing = () => {
+// Allow messages to be processed, and process any backlog of messages.
+const startMessageProcessing = () => {
   if (notStartedWarningTimeout !== null) {
     clearTimeout(notStartedWarningTimeout);
     notStartedWarningTimeout = null;
   }
 
-  eventProcessingActive = true;
-  eventProcessingEverActive = true;
+  messageProcessingActive = true;
+  messageProcessingEverActive = true;
 
-  while (eventDataQueue.length > 0) {
-    const eventData = eventDataQueue.pop();
+  while (messageQueue.length > 0) {
+    const messageData = messageQueue.pop();
 
-    if (eventData === undefined) {
+    if (messageData === undefined) {
       // A foreach loop! A foreach loop! My kingdom
       // for a foreach loop!
       continue;
       // aka this will never happen.
     }
 
-    triggerEventInternal(eventData.type, eventData.params);
+    triggerMessageInternal(messageData.type, messageData.params);
   }
 };
 
-// Stop events from being processed immediately.
-const stopEventProcessing = () => {
-  eventProcessingActive = false;
+// Stop messages from being processed immediately.
+const stopMessageProcessing = () => {
+  messageProcessingActive = false;
 };
 
 const timeoutDebugInfo = () => {
   // TODO - change to just no-console
   // @ts-ignore: console warning is fine here.
   console.warn(
-    'You sent an event but event processing has never been activated. Call Message.startEventProcessing if you want events to be dispatched.',
+    'You sent a message but message processing has never been activated. Call Message.startMessageProcessing if you want events to be dispatched.',
   );
 };
 
@@ -101,14 +101,14 @@ const timeoutDebugInfo = () => {
  * @param eventType
  * @param params
  */
-function triggerEventInternal(eventType: string, params: object) {
+function triggerMessageInternal(eventType: string, params: object) {
   // @ts-ignore: any ...
-  if (eventListeners[eventType] === undefined) {
+  if (messsageListeners[eventType] === undefined) {
     // console.error('unknown event type ' + event);
     return;
   }
   // @ts-ignore: any ...
-  const callbacks = eventListeners[eventType];
+  const callbacks = messsageListeners[eventType];
 
   const keys = Object.keys(callbacks);
   for (const i in keys) {
@@ -122,22 +122,22 @@ function triggerEventInternal(eventType: string, params: object) {
   }
 }
 
-const triggerEvent = (eventType: string, params: object) => {
+const sendMessage = (eventType: string, params: object) => {
   // if event processing is active, process it.
-  if (eventProcessingActive === true) {
-    return triggerEventInternal(eventType, params);
+  if (messageProcessingActive === true) {
+    return triggerMessageInternal(eventType, params);
   }
 
   // If not, store the data for later processing.
-  eventDataQueue.push({ type: eventType, params });
+  messageQueue.push({ type: eventType, params });
 
   // If processing has ever been active, assume they know
   // what they're doing
-  if (eventProcessingEverActive === true) {
+  if (messageProcessingEverActive === true) {
     return;
   }
 
-  // Otherwise create a timeout to remind them to call 'startEventProcessing'
+  // Otherwise create a timeout to remind them to call 'startMessageProcessing'
   notStartedWarningTimeout = setTimeout(timeoutDebugInfo, notStartedWarningTime * 1000);
 };
 
@@ -146,25 +146,25 @@ const triggerEvent = (eventType: string, params: object) => {
  * when the processing is disabled, as that is the only time
  * there should be queued events.
  */
-const clearEvents = () => {
-  eventDataQueue = [];
+const clearMessages = () => {
+  messageQueue = [];
 };
 
 /**
  * Get the queued events. This queue should only have entries
  * when the processing is disabled.
  */
-const getQueuedEvents = () => {
+const getQueuedMessages = () => {
   // TODO - return a copy, because JS.
-  return eventDataQueue;
+  return messageQueue;
 };
 
 module.exports = {
-  clearEvents,
-  getQueuedEvents,
-  registerEventListener,
-  startEventProcessing,
-  stopEventProcessing,
-  triggerEvent,
+  clearMessages,
+  getQueuedMessages,
+  registerMessageListener,
+  startMessageProcessing,
+  stopMessageProcessing,
+  sendMessage,
   unregisterListener,
 };
