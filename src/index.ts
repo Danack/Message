@@ -1,4 +1,4 @@
-import initByClass from "../../widgety/src";
+import initByClass from '../../widgety/src';
 
 type Message = {
   type: string;

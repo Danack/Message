@@ -87,5 +87,4 @@ describe('widgety', function () {
   });
 
   // TODO test debug timeout.
-
 });
