@@ -30,7 +30,7 @@ const notStartedWarningTime = 5;
 let messageQueue: Message[] = [];
 
 // The current listeners to events.
-let messsageListeners: object = {};
+const messsageListeners: object = {};
 
 /**
  * Register a listener for a particular type of event.
