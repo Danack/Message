@@ -1,3 +1,5 @@
+import initByClass from "../../widgety/src";
+
 type Message = {
   type: string;
   params: object;
@@ -37,7 +39,7 @@ let messsageListeners: object = {};
  * @param id A unique id for this listener
  * @param fn The thing to call when the event is dispatched.
  */
-const registerMessageListener = (messageType: string, id: string, fn: (params: object) => void) => {
+export const registerMessageListener = (messageType: string, id: string, fn: (params: object) => void) => {
   // @ts-ignore: any ...
   if (messsageListeners[messageType] === undefined) {
     // @ts-ignore: any ...
@@ -53,13 +55,13 @@ const registerMessageListener = (messageType: string, id: string, fn: (params: o
  * @param messageType
  * @param id
  */
-const unregisterListener = (messageType: string, id: string) => {
+export const unregisterListener = (messageType: string, id: string) => {
   // @ts-ignore: any ...
   delete messsageListeners[messageType][id];
 };
 
 // Allow messages to be processed, and process any backlog of messages.
-const startMessageProcessing = () => {
+export const startMessageProcessing = () => {
   if (notStartedWarningTimeout !== null) {
     clearTimeout(notStartedWarningTimeout);
     notStartedWarningTimeout = null;
@@ -82,12 +84,14 @@ const startMessageProcessing = () => {
   }
 };
 
+// export default startMessageProcessing;
+
 // Stop messages from being processed immediately.
-const stopMessageProcessing = () => {
+export const stopMessageProcessing = () => {
   messageProcessingActive = false;
 };
 
-const timeoutDebugInfo = () => {
+export const timeoutDebugInfo = () => {
   // TODO - change to just no-console
   // @ts-ignore: console warning is fine here.
   console.warn(
@@ -122,7 +126,7 @@ function triggerMessageInternal(eventType: string, params: object) {
   }
 }
 
-const sendMessage = (eventType: string, params: object) => {
+export const sendMessage = (eventType: string, params: object) => {
   // if event processing is active, process it.
   if (messageProcessingActive === true) {
     return triggerMessageInternal(eventType, params);
@@ -146,7 +150,7 @@ const sendMessage = (eventType: string, params: object) => {
  * when the processing is disabled, as that is the only time
  * there should be queued events.
  */
-const clearMessages = () => {
+export const clearMessages = () => {
   messageQueue = [];
 };
 
@@ -154,17 +158,25 @@ const clearMessages = () => {
  * Get the queued events. This queue should only have entries
  * when the processing is disabled.
  */
-const getQueuedMessages = () => {
+export const getQueuedMessages = () => {
   // TODO - return a copy, because JS.
   return messageQueue;
 };
 
-module.exports = {
-  clearMessages,
-  getQueuedMessages,
-  registerMessageListener,
-  startMessageProcessing,
-  stopMessageProcessing,
-  sendMessage,
-  unregisterListener,
-};
+// module.exports = {
+//   clearMessages,
+//   getQueuedMessages,
+//   registerMessageListener,
+//   startMessageProcessing,
+//   stopMessageProcessing,
+//   sendMessage,
+//   unregisterListener,
+// };
+
+// export default startMessageProcessing;
+// export function clearMessages;
+// export function getQueuedMessages;
+// export function registerMessageListener;
+// export function stopMessageProcessing;
+// export function sendMessage;
+// export function unregisterListener;
