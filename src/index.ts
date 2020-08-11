@@ -5,6 +5,10 @@ type Message = {
   params: object;
 };
 
+interface MessageCallback {
+  (params: object): void;
+}
+
 // Whether message processing is active. Events are not processed
 // until startMessageProcessing is called, so that events that are
 // triggered while widgets are being created, aren't dispatched
@@ -29,17 +33,37 @@ const notStartedWarningTime = 5;
 // immediately. This is typically used when an app is starting up.
 let messageQueue: Message[] = [];
 
+interface MessageListener {
+  [key: string]: MessageCallback;
+}
+
+interface MessageListenerByType {
+  [key: string]: MessageListener;
+}
+
 // The current listeners to events.
-const messsageListeners: object = {};
+const messsageListeners: MessageListenerByType = {};
+
+// let myStr: string = myArray[0];
+
+interface MessageListenerType {
+  [key: number]: string;
+}
+
+const messsageListenersTypes: MessageListenerType = {};
+
+let next_id: number = 0;
 
 /**
  * Register a listener for a particular type of event.
  *
  * @param messageType which event to listen for.
- * @param id A unique id for this listener
  * @param fn The thing to call when the event is dispatched.
  */
-export const registerMessageListener = (messageType: string, id: string, fn: (params: object) => void) => {
+export const registerMessageListener = (messageType: string, fn: MessageCallback): number => {
+  const id = next_id;
+  next_id += 1;
+
   // @ts-ignore: any ...
   if (messsageListeners[messageType] === undefined) {
     // @ts-ignore: any ...
@@ -47,17 +71,26 @@ export const registerMessageListener = (messageType: string, id: string, fn: (pa
   }
   // @ts-ignore: any ...
   messsageListeners[messageType][id] = fn;
+  messsageListenersTypes[id] = messageType;
+
+  return id;
 };
 
 /**
  *
- *
- * @param messageType
  * @param id
  */
-export const unregisterListener = (messageType: string, id: string) => {
-  // @ts-ignore: any ...
-  delete messsageListeners[messageType][id];
+export const unregisterListener = (id: number) => {
+  let type = messsageListenersTypes[id];
+
+  if (type === undefined) {
+    console.log('Failed to unregisterListener, unknown id ' + id + ' in messsageListenersTypes');
+  }
+
+  delete messsageListeners[type][id];
+
+  // check undefined
+  delete messsageListenersTypes[id];
 };
 
 // Allow messages to be processed, and process any backlog of messages.
@@ -83,8 +116,6 @@ export const startMessageProcessing = () => {
     triggerMessageInternal(messageData.type, messageData.params);
   }
 };
-
-// export default startMessageProcessing;
 
 // Stop messages from being processed immediately.
 export const stopMessageProcessing = () => {
@@ -162,21 +193,3 @@ export const getQueuedMessages = () => {
   // TODO - return a copy, because JS.
   return messageQueue;
 };
-
-// module.exports = {
-//   clearMessages,
-//   getQueuedMessages,
-//   registerMessageListener,
-//   startMessageProcessing,
-//   stopMessageProcessing,
-//   sendMessage,
-//   unregisterListener,
-// };
-
-// export default startMessageProcessing;
-// export function clearMessages;
-// export function getQueuedMessages;
-// export function registerMessageListener;
-// export function stopMessageProcessing;
-// export function sendMessage;
-// export function unregisterListener;

@@ -21,8 +21,6 @@ describe('widgety', function () {
   });
 
   it('dispatches okay', function () {
-    const id = '12345';
-
     clearMessages();
     startMessageProcessing();
     sendMessage(message_foo, {});
@@ -39,15 +37,15 @@ describe('widgety', function () {
     expect(calledParams).toHaveLength(0);
 
     // Check foo message does reach our callback.
-    registerMessageListener(message_foo, id, fn);
+    let id = registerMessageListener(message_foo, fn);
     sendMessage(message_foo, values);
     expect(calledParams).toHaveLength(1);
     expect(calledParams[0]).toEqual(values);
+
+    unregisterListener(id);
   });
 
   it('stopping starting processing works', function () {
-    const id = 'abcdef';
-
     clearMessages();
 
     const values = { zok: true, fot: false, pik: 3 };
@@ -61,7 +59,7 @@ describe('widgety', function () {
     stopMessageProcessing();
 
     // Check foo message does reach our callback.
-    registerMessageListener(message_foo, id, fn);
+    let id = registerMessageListener(message_foo, fn);
 
     // Check an message doesn't reach our callback when processing
     // isn't running
@@ -84,6 +82,8 @@ describe('widgety', function () {
     sendMessage(message_foo, values);
     // Check the callback was not called.
     expect(calledParams).toHaveLength(2);
+
+    unregisterListener(id);
   });
 
   // TODO test debug timeout.
